@@ -112,14 +112,19 @@ export default {
             })
             this.finalListItemOutlet = await Promise.all(promises)
             this.$store.dispatch('application/setShowLoader', false)
+            if (this.isApiRequesting) {
+                this.intervalCheckOrders()
+            }
             this.isApiRequesting = false
+        },
+        intervalCheckOrders () {
+            setInterval(() => {
+                this.findFinalListOutletToRender()
+            }, 15000)
         }
     },
     mounted () {
         this.getCompanyList()
-        setInterval(() => {
-            this.getCompanyList(false)
-        }, 15000)
     },
     components: {}
 }
