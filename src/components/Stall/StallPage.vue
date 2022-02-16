@@ -1,10 +1,10 @@
 <template>
-    <div>
-    <h1 class="px-2 pt-2">Queue Order</h1>
+    <div class="pt-5">
     <div class="table-queue">
         <div class="table-title"></div>
-        <div class="text-center">
+        <div class="text-center pt-3">
             <img
+                src="@/assets/images/samsung-logo.png"
             width="180px"
             alt=""
             aria-hidden="true"
@@ -22,12 +22,12 @@
             </div>
         </div>
         <div class="w-100" v-for="perFinalItemOutlet in finalListItemOutlet" :key="perFinalItemOutlet.id">
-            <div v-for="(perItem, index) in perFinalItemOutlet.data" :key="index"  class="d-flex w-100 align-items-center">
-                <div class="d-flex w-50 px-2 pt-2">
+            <div v-for="(perItem, index) in perFinalItemOutlet.data" :key="index"  class="d-flex w-100 align-items-center mt-4 mb-4">
+                <div class="d-flex w-50 px-2" style="margin-left: 20px">
                     <img class="img-data" :src="perFinalItemOutlet.image"/>
-                    <p class="px-2 mb-0">{{perItem.QueueNumber}}</p>
+                    <p class="px-2 mb-0"><strong class="queue-number">{{perItem.QueueNumber}}</strong></p>
                 </div>
-                <div class="w-50 px-2 pt-2 right-element">
+                <div class="w-50 px-2 right-element text-center">
                     <img v-if="perItem.Status === 'Ready'" :src="checkboxImg" alt="png">
                 </div>
             </div>
@@ -43,6 +43,7 @@ import checkboxImg from '@/images/checkbox.png'
 export default {
     data () {
         return {
+            isApiRequesting: false,
             checkboxImg,
             listCompanyToSelect: [],
             listOutlet: [],
@@ -50,11 +51,21 @@ export default {
         }
     },
     methods: {
-        getCompanyList () {
-            this.listCompanyToSelect = []
-            this.listOutlet = []
-            this.finalListItemOutlet = []
-            this.$store.dispatch('application/setShowLoader', true)
+        getCompanyList (reset = true) {
+            if (this.isApiRequesting) {
+                return
+            }
+
+            this.isApiRequesting = true
+            if (reset) {
+                this.listCompanyToSelect = []
+                this.listOutlet = []
+                this.finalListItemOutlet = []
+            }
+
+            if (reset) {
+                this.$store.dispatch('application/setShowLoader', true)
+            }
             OrderListAPI.getCompanyList().then(res => {
                 if (Application.isApiResponseSuccess(res.data)) {
                     const companyList = res.data.Data
@@ -76,12 +87,15 @@ export default {
             const dataOutlet = await Promise.all(promises)
             dataOutlet.map(listOutletPerCompany => {
                 if (listOutletPerCompany && listOutletPerCompany.length) {
+                    const listOutlet = []
                     listOutletPerCompany.map(eachOutlet => {
-                        this.listOutlet.push({
+                        listOutlet.push({
                             id: eachOutlet.Id,
                             image: eachOutlet.ImageUrl
                         })
                     })
+
+                    this.listOutlet = listOutlet
                 }
             })
             this.findFinalListOutletToRender()
@@ -98,13 +112,14 @@ export default {
             })
             this.finalListItemOutlet = await Promise.all(promises)
             this.$store.dispatch('application/setShowLoader', false)
-            setTimeout(() => {
-                this.getCompanyList()
-            }, 15000)
+            this.isApiRequesting = false
         }
     },
     mounted () {
         this.getCompanyList()
+        setInterval(() => {
+            this.getCompanyList(false)
+        }, 15000)
     },
     components: {}
 }
@@ -118,6 +133,7 @@ export default {
         flex-direction: column;
         width: 60%;
         margin: auto;
+        font-family: Montserrat,sans-serif;
     }
     .header-stall {
         margin-top: 10px;
@@ -135,5 +151,9 @@ export default {
     .img-data {
         width: 30px;
         height: 30px;
+    }
+    .queue-number {
+        font-size: 28px;
+        font-family: 'Montserrat' ,'sans-serif' !important;
     }
 </style>
