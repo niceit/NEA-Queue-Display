@@ -15,7 +15,7 @@
         </div>
         <div class="d-flex w-100">
             <div class="w-50 text-center header-stall">
-                <h1>Stall Number</h1>
+                <h1>Queue Number</h1>
             </div>
             <div class="w-50 text-center header-stall right-element">
                 <h1>Collection Ready</h1>
